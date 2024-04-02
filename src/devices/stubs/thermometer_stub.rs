@@ -1,4 +1,5 @@
-use crate::common_traits::device::{Described, SmartDevice, Thermometer};
+use crate::common::traits::Described;
+use crate::common::traits::device::{SmartDevice, Thermometer};
 use crate::devices::thermometer::TemperatureSensorTrait;
 
 #[derive(Debug)]

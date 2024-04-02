@@ -1,4 +1,5 @@
-use crate::common_traits::device::{Described, PowerConsumptionMeter, SmartDevice, Switchable};
+use crate::common::traits::Described;
+use crate::common::traits::device::{PowerConsumptionMeter, SmartDevice, Switchable};
 use crate::devices::socket::SocketTrait;
 
 #[derive(Debug)]

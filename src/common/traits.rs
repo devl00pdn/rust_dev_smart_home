@@ -1,14 +1,14 @@
+pub trait Described {
+    fn description(&self) -> String {
+        "none".to_string()
+    }
+}
+
 pub mod device {
     use crate::devices::socket::SocketTrait;
     use crate::devices::thermometer::TemperatureSensorTrait;
 
-    pub trait Described {
-        fn description(&self) -> String {
-            "none".to_string()
-        }
-    }
-
-    pub trait SmartDevice: Described {
+    pub trait SmartDevice: super::Described {
         fn as_socket(&self) -> Option<&dyn SocketTrait> { None }
         fn as_temperature_sensor(&self) -> Option<&dyn TemperatureSensorTrait> { None }
     }
