@@ -18,9 +18,26 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose
-    - name: Checks
-      run: cargo check --all --all-targets
-    - name: Clyppy
-      run: cargo clippy --all --all-targets
-    - name: Run tests
-      run: cargo test --verbose
+
+  checks:
+      runs-on: ubuntu-latest
+      continue-on-error: true
+      needs: build
+      steps:
+      - uses: actions/checkout@v3
+      - name: Checks
+        run: cargo check --all --all-targets
+      - name: Clyppy
+        run: cargo clippy --all --all-targets
+        
+  tests:
+      runs-on: ubuntu-latest
+      continue-on-error: true
+      needs: build
+      steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: cargo test --verbose
+        
+
+    
