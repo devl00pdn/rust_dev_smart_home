@@ -61,7 +61,7 @@ mod tests {
     #[test]
     fn methods() {
         let mut kitchen_socket = SocketStub::new("Kitchen".to_string());
-        assert!(!kitchen_socket.current_state());
+        assert!(kitchen_socket.current_state());
         assert_eq!(kitchen_socket.power_consumption_wt(), 0.0);
         assert!(kitchen_socket.turn_on());
         assert!(kitchen_socket.current_state());

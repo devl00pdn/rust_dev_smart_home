@@ -6,12 +6,12 @@ pub mod room;
 pub struct House<'a> {
     rooms: Vec<&'a Room<'a>>,
 }
-
-impl<'a> Default for House<'a> {
-    fn default() -> House<'a> {
-        Self::new()
-    }
-}
+//
+// impl<'a> Default for House<'a> {
+//     fn default() -> House<'a> {
+//         Self::new()
+//     }
+// }
 
 
 impl<'a> House<'a> {
