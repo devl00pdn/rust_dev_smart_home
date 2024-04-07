@@ -3,10 +3,6 @@ name = "rust_dev_smart_home"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-name = "smart_home_lib"
-path = "src/lib.rs"
-
 [[bin]]
 name = "smart_home"
 path = "src/main.rs"

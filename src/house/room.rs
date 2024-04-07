@@ -34,6 +34,7 @@ impl<'a> Room<'a> {
 
 #[cfg(test)]
 mod tests {
+    use crate::common::traits::device::SmartDevice;
     use crate::devices::stubs::socket_stub::SocketStub;
 
     use super::*;
