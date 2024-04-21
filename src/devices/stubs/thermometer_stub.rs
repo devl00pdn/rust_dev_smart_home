@@ -1,17 +1,13 @@
+use smart_home_derive::Described;
+
 use crate::common::traits::Described;
 use crate::common::traits::device::{SmartDevice, Thermometer};
 use crate::devices::thermometer::TemperatureSensorTrait;
 
-#[derive(Debug)]
+#[derive(Debug, Described)]
 pub struct ThermometerStub {
     description: String,
     current_temp_deg: f32,
-}
-
-impl Described for ThermometerStub {
-    fn description(&self) -> String {
-        self.description.clone()
-    }
 }
 
 impl Thermometer for ThermometerStub {
@@ -28,11 +24,7 @@ impl ThermometerStub {
 
 impl TemperatureSensorTrait for ThermometerStub {}
 
-impl SmartDevice for ThermometerStub {
-    fn as_temperature_sensor(&self) -> Option<&dyn TemperatureSensorTrait> {
-        Some(self)
-    }
-}
+impl SmartDevice for ThermometerStub {}
 
 #[cfg(test)]
 mod tests {

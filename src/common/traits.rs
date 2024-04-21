@@ -5,13 +5,7 @@ pub trait Described {
 }
 
 pub mod device {
-    use crate::devices::socket::SocketTrait;
-    use crate::devices::thermometer::TemperatureSensorTrait;
-
-    pub trait SmartDevice: super::Described {
-        fn as_socket(&self) -> Option<&dyn SocketTrait> { None }
-        fn as_temperature_sensor(&self) -> Option<&dyn TemperatureSensorTrait> { None }
-    }
+    pub trait SmartDevice: super::Described {}
 
     pub trait Switchable {
         fn turn_on(&mut self) -> bool;
