@@ -1,8 +1,10 @@
+use smart_home_derive::Described;
+
 use crate::common::traits::Described;
 use crate::common::traits::device::{PowerConsumptionMeter, SmartDevice, Switchable};
 use crate::devices::socket::SocketTrait;
 
-#[derive(Debug)]
+#[derive(Debug, Described)]
 pub struct SocketStub {
     power_consumption_wt: f32,
     state: bool,
@@ -12,12 +14,6 @@ pub struct SocketStub {
 impl SocketStub {
     pub fn new(desc: String) -> SocketStub {
         SocketStub { power_consumption_wt: 0.0, state: false, description: desc }
-    }
-}
-
-impl Described for SocketStub {
-    fn description(&self) -> String {
-        self.description.clone()
     }
 }
 
@@ -47,11 +43,7 @@ impl Switchable for SocketStub {
 
 impl SocketTrait for SocketStub {}
 
-impl SmartDevice for SocketStub {
-    fn as_socket(&self) -> Option<&dyn SocketTrait> {
-        Some(self)
-    }
-}
+impl SmartDevice for SocketStub {}
 
 
 #[cfg(test)]
