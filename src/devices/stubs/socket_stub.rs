@@ -1,57 +1,65 @@
+use smart_home_derive::Described;
+
 use crate::common::traits::Described;
-use crate::common::traits::device::{PowerConsumptionMeter, SmartDevice, Switchable};
+use crate::common::traits::device::{Err, OptReplay, PowerConsumptionMeter, Replay, SmartDevice, Switchable};
 use crate::devices::socket::SocketTrait;
 
-#[derive(Debug)]
+#[derive(Debug, Described)]
 pub struct SocketStub {
     power_consumption_wt: f32,
     state: bool,
     description: String,
+    /// true - device online
+    connection_state_emulation: bool,
 }
 
 impl SocketStub {
     pub fn new(desc: String) -> SocketStub {
-        SocketStub { power_consumption_wt: 0.0, state: false, description: desc }
+        SocketStub { power_consumption_wt: 0.0, state: false, description: desc, connection_state_emulation: true }
     }
-}
 
-impl Described for SocketStub {
-    fn description(&self) -> String {
-        self.description.clone()
+    pub fn online(&mut self, state: bool) {
+        self.connection_state_emulation = state
     }
 }
 
 impl PowerConsumptionMeter for SocketStub {
-    fn power_consumption_wt(&self) -> f32 {
-        self.power_consumption_wt
+    fn power_consumption_wt(&self) -> OptReplay<f32> {
+        if !self.connection_state_emulation {
+            return Err(Err { msg: "Device not respond".to_string() });
+        }
+        Ok(Some(self.power_consumption_wt))
     }
 }
 
 impl Switchable for SocketStub {
-    fn turn_on(&mut self) -> bool {
+    fn turn_on(&mut self) -> Replay<bool> {
         self.state = true;
-        println!("Socket turned on");
-        true
+        if !self.connection_state_emulation {
+            return Err(Err { msg: "Device not respond".to_string() });
+        }
+        Ok(true)
     }
 
-    fn turn_off(&mut self) -> bool {
+    fn turn_off(&mut self) -> Replay<bool> {
         self.state = false;
-        println!("Socket turned off");
-        true
+        if !self.connection_state_emulation {
+            return Err(Err { msg: "Device not respond".to_string() });
+        }
+        Ok(true)
     }
 
-    fn current_state(&self) -> bool {
-        self.state
+    fn current_state(&self) -> Replay<bool> {
+        if !self.connection_state_emulation {
+            return Err(Err { msg: "Device not respond".to_string() });
+        }
+        Ok(self.state)
     }
 }
 
 impl SocketTrait for SocketStub {}
 
-impl SmartDevice for SocketStub {
-    fn as_socket(&self) -> Option<&dyn SocketTrait> {
-        Some(self)
-    }
-}
+impl SmartDevice for SocketStub {}
 
 
 #[cfg(test)]
@@ -61,12 +69,17 @@ mod tests {
     #[test]
     fn methods() {
         let mut kitchen_socket = SocketStub::new("Kitchen".to_string());
-        assert!(!kitchen_socket.current_state());
-        assert_eq!(kitchen_socket.power_consumption_wt(), 0.0);
-        assert!(kitchen_socket.turn_on());
-        assert!(kitchen_socket.current_state());
-        assert!(kitchen_socket.turn_off());
+        assert!(!kitchen_socket.current_state().unwrap());
+        assert_eq!(kitchen_socket.power_consumption_wt().unwrap().unwrap(), 0.0);
+        assert!(kitchen_socket.turn_on().unwrap());
+        assert!(kitchen_socket.current_state().unwrap());
+        assert!(kitchen_socket.turn_off().unwrap());
         assert_eq!(kitchen_socket.description, "Kitchen".to_string());
-        assert!(!kitchen_socket.current_state());
+        assert!(!kitchen_socket.current_state().unwrap());
+        kitchen_socket.online(false);
+        assert!(kitchen_socket.current_state().is_err());
+        assert!(kitchen_socket.turn_on().is_err());
+        assert!(kitchen_socket.turn_off().is_err());
+        kitchen_socket.online(true);
     }
 }

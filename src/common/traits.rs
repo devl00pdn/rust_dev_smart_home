@@ -5,25 +5,41 @@ pub trait Described {
 }
 
 pub mod device {
-    use crate::devices::socket::SocketTrait;
-    use crate::devices::thermometer::TemperatureSensorTrait;
+    use std::fmt::{Debug, Display, Formatter};
 
-    pub trait SmartDevice: super::Described {
-        fn as_socket(&self) -> Option<&dyn SocketTrait> { None }
-        fn as_temperature_sensor(&self) -> Option<&dyn TemperatureSensorTrait> { None }
-    }
+    pub trait SmartDevice: super::Described {}
 
     pub trait Switchable {
-        fn turn_on(&mut self) -> bool;
-        fn turn_off(&mut self) -> bool;
-        fn current_state(&self) -> bool;
+        fn turn_on(&mut self) -> Replay<bool>;
+        fn turn_off(&mut self) -> Replay<bool>;
+        fn current_state(&self) -> Replay<bool>;
     }
 
     pub trait PowerConsumptionMeter {
-        fn power_consumption_wt(&self) -> f32;
+        fn power_consumption_wt(&self) -> OptReplay<f32>;
     }
 
     pub trait Thermometer {
-        fn temperature_deg_celsius(&self) -> f32;
+        fn temperature_deg_celsius(&self) -> OptReplay<f32>;
     }
+
+    pub type Replay<T> = Result<T, Err>;
+    pub type OptReplay<T> = Result<Option<T>, Err>;
+
+    #[derive(Debug)]
+    pub struct Err {
+        pub(crate) msg: String,
+    }
+
+    impl Display for Err {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            write!(
+                f,
+                "Operation not performed because : {}",
+                self.msg
+            )
+        }
+    }
+
+    impl std::error::Error for Err {}
 }
