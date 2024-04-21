@@ -1,24 +1,32 @@
 use smart_home_derive::Described;
 
 use crate::common::traits::Described;
-use crate::common::traits::device::{SmartDevice, Thermometer};
+use crate::common::traits::device::{OptReplay, SmartDevice, Thermometer};
 use crate::devices::thermometer::TemperatureSensorTrait;
 
 #[derive(Debug, Described)]
 pub struct ThermometerStub {
     description: String,
     current_temp_deg: f32,
+    connection_state_emulation: bool,
 }
 
 impl Thermometer for ThermometerStub {
-    fn temperature_deg_celsius(&self) -> f32 {
-        self.current_temp_deg
+    fn temperature_deg_celsius(&self) -> OptReplay<f32> {
+        if !self.connection_state_emulation {
+            return Err(crate::common::traits::device::Err { msg: "Device not respond".to_string() });
+        }
+        Ok(Some(self.current_temp_deg))
     }
 }
 
 impl ThermometerStub {
     pub fn new(description: String) -> ThermometerStub {
-        ThermometerStub { description, current_temp_deg: 0.0 }
+        ThermometerStub { description, current_temp_deg: 0.0, connection_state_emulation: true }
+    }
+
+    pub fn online(&mut self, state: bool) {
+        self.connection_state_emulation = state
     }
 }
 
@@ -34,6 +42,9 @@ mod tests {
     fn methods() {
         let mut term_stub = ThermometerStub::new("bedroom temp sensor".to_string());
         term_stub.current_temp_deg = 10.0;
-        assert_eq!(term_stub.temperature_deg_celsius(), 10.0);
+        assert_eq!(term_stub.temperature_deg_celsius().unwrap().unwrap(), 10.0);
+        term_stub.online(false);
+        assert!(term_stub.temperature_deg_celsius().is_err());
+        term_stub.online(true);
     }
 }
