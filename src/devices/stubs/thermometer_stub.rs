@@ -1,7 +1,11 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use smart_home_derive::Described;
 
 use crate::common::traits::Described;
 use crate::common::traits::device::{OptReplay, SmartDevice, Thermometer};
+use crate::common::types::SmartPointer;
 use crate::devices::thermometer::TemperatureSensorTrait;
 
 #[derive(Debug, Described)]
@@ -21,8 +25,8 @@ impl Thermometer for ThermometerStub {
 }
 
 impl ThermometerStub {
-    pub fn new(description: String) -> ThermometerStub {
-        ThermometerStub { description, current_temp_deg: 0.0, connection_state_emulation: true }
+    pub fn new(description: String) -> SmartPointer<ThermometerStub> {
+        Rc::new(RefCell::new(ThermometerStub { description, current_temp_deg: 0.0, connection_state_emulation: true }))
     }
 
     pub fn online(&mut self, state: bool) {
@@ -40,11 +44,11 @@ mod tests {
 
     #[test]
     fn methods() {
-        let mut term_stub = ThermometerStub::new("bedroom temp sensor".to_string());
-        term_stub.current_temp_deg = 10.0;
-        assert_eq!(term_stub.temperature_deg_celsius().unwrap().unwrap(), 10.0);
-        term_stub.online(false);
-        assert!(term_stub.temperature_deg_celsius().is_err());
-        term_stub.online(true);
+        let term_stub = ThermometerStub::new("bedroom temp sensor".to_string());
+        term_stub.borrow_mut().current_temp_deg = 10.0;
+        assert_eq!(term_stub.borrow().temperature_deg_celsius().unwrap().unwrap(), 10.0);
+        term_stub.borrow_mut().online(false);
+        assert!(term_stub.borrow().temperature_deg_celsius().is_err());
+        term_stub.borrow_mut().online(true);
     }
 }

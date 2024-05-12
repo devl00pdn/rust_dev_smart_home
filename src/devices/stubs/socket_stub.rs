@@ -1,7 +1,11 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use smart_home_derive::Described;
 
 use crate::common::traits::Described;
 use crate::common::traits::device::{Err, OptReplay, PowerConsumptionMeter, Replay, SmartDevice, Switchable};
+use crate::common::types::SmartPointer;
 use crate::devices::socket::SocketTrait;
 
 #[derive(Debug, Described)]
@@ -14,8 +18,8 @@ pub struct SocketStub {
 }
 
 impl SocketStub {
-    pub fn new(desc: String) -> SocketStub {
-        SocketStub { power_consumption_wt: 0.0, state: false, description: desc, connection_state_emulation: true }
+    pub fn new(desc: String) -> SmartPointer<SocketStub> {
+        Rc::new(RefCell::new(SocketStub { power_consumption_wt: 0.0, state: false, description: desc, connection_state_emulation: true }))
     }
 
     pub fn online(&mut self, state: bool) {
@@ -68,18 +72,18 @@ mod tests {
 
     #[test]
     fn methods() {
-        let mut kitchen_socket = SocketStub::new("Kitchen".to_string());
-        assert!(!kitchen_socket.current_state().unwrap());
-        assert_eq!(kitchen_socket.power_consumption_wt().unwrap().unwrap(), 0.0);
-        assert!(kitchen_socket.turn_on().unwrap());
-        assert!(kitchen_socket.current_state().unwrap());
-        assert!(kitchen_socket.turn_off().unwrap());
-        assert_eq!(kitchen_socket.description, "Kitchen".to_string());
-        assert!(!kitchen_socket.current_state().unwrap());
-        kitchen_socket.online(false);
-        assert!(kitchen_socket.current_state().is_err());
-        assert!(kitchen_socket.turn_on().is_err());
-        assert!(kitchen_socket.turn_off().is_err());
-        kitchen_socket.online(true);
+        let kitchen_socket = SocketStub::new("Kitchen".to_string());
+        assert!(!kitchen_socket.borrow().current_state().unwrap());
+        assert_eq!(kitchen_socket.borrow().power_consumption_wt().unwrap().unwrap(), 0.0);
+        assert!(kitchen_socket.borrow_mut().turn_on().unwrap());
+        assert!(kitchen_socket.borrow().current_state().unwrap());
+        assert!(kitchen_socket.borrow_mut().turn_off().unwrap());
+        assert_eq!(kitchen_socket.borrow().description, "Kitchen".to_string());
+        assert!(!kitchen_socket.borrow().current_state().unwrap());
+        kitchen_socket.borrow_mut().online(false);
+        assert!(kitchen_socket.borrow().current_state().is_err());
+        assert!(kitchen_socket.borrow_mut().turn_on().is_err());
+        assert!(kitchen_socket.borrow_mut().turn_off().is_err());
+        kitchen_socket.borrow_mut().online(true);
     }
 }
