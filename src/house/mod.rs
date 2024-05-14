@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::LinkedList;
 use std::rc::Rc;
 
 use crate::common::traits::Described;
@@ -7,7 +8,7 @@ use crate::house::room::Room;
 pub mod room;
 
 pub struct House {
-    rooms: Vec<Rc<RefCell<Room>>>,
+    rooms: LinkedList<Rc<RefCell<Room>>>,
 }
 
 impl Default for House {
@@ -19,11 +20,23 @@ impl Default for House {
 
 impl House {
     pub fn new() -> House {
-        House { rooms: vec![] }
+        House { rooms: LinkedList::new() }
     }
 
     pub fn add_room(&mut self, room: Rc<RefCell<Room>>) {
-        self.rooms.push(room);
+        self.rooms.push_back(room);
+    }
+
+    pub fn remove_room(&mut self, name: String) -> Result<(), &str> {
+        let room_position = self.rooms.iter().position(|room| room.borrow().description() == name);
+        if let Some(rm_index) = room_position {
+            let swapped_elem = self.rooms.pop_back().unwrap();
+            if rm_index < self.rooms.len() {
+                *self.rooms.iter_mut().nth(rm_index).unwrap() = swapped_elem.clone();
+            }
+            return Ok(());
+        }
+        Err("Room to remove not found")
     }
 
     pub fn make_report(&self) -> String {
@@ -31,6 +44,13 @@ impl House {
         for room in &self.rooms {
             report = format!("{}{}:\n", report, room.borrow().description());
             report = format!("{}{}\n", report, room.borrow().make_report());
+        }
+        report
+    }
+    pub fn rooms_report(&self) -> String {
+        let mut report = String::new();
+        for room in &self.rooms {
+            report = format!("{}{}\n", report, room.borrow().name());
         }
         report
     }
@@ -43,7 +63,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn add_rooms() {
+    fn add_and_remove_rooms() {
         let livingroom = Room::new("living room".to_string());
         let kitchen = Room::new("kitchen".to_string());
 
@@ -58,5 +78,20 @@ mod tests {
         home.add_room(livingroom.clone());
         home.add_room(kitchen.clone());
         assert_eq!("living room:\nbase socket\nbase thermometer\n\nkitchen:\nbase socket\nbase thermometer\n\n", home.make_report());
+        assert_eq!("living room\nkitchen\n", home.rooms_report());
+        if let Err(err) = home.remove_room("not_added_room_name".to_string()) {
+            assert_eq!(err, "Room to remove not found");
+        }
+        if home.remove_room("kitchen".to_string()).is_err() {
+            panic!("not expected result");
+        }
+        assert_eq!("living room\n", home.rooms_report());
+        if home.remove_room("living room".to_string()).is_err() {
+            panic!("not expected result");
+        }
+        assert_eq!("", home.rooms_report());
+        if let Err(err) = home.remove_room("kitchen".to_string()) {
+            assert_eq!(err, "Room to remove not found");
+        }
     }
 }

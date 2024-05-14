@@ -15,8 +15,8 @@ fn main() {
     kitchen.borrow_mut().add_device(term.clone());
 
     let mut home = House::new();
-    home.add_room(livingroom);
-    home.add_room(kitchen);
+    home.add_room(livingroom.clone());
+    home.add_room(kitchen.clone());
     println!("{}", home.make_report());
 
     socket.borrow_mut().online(false);
@@ -25,4 +25,7 @@ fn main() {
         Err(e) => { eprintln!("Error output: {}", e); }
     };
     socket.borrow_mut().online(true);
+
+    kitchen.borrow_mut().remove_device("base thermometer".to_string()).expect("removing base thermometer");
+    home.remove_room("kitchen".to_string()).expect("removing kitchen");
 }
