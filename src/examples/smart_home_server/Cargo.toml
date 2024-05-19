@@ -1,0 +1,11 @@
+[package]
+name = "smart_home_server"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[dependencies]
+smart_home_lib = { path = "../../../library/smart_home_lib" }
