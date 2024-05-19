@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 smart_home_derive = { path = "../smart_home_derive" }
+regex = "1.10.4"
