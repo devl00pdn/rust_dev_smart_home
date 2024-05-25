@@ -3,6 +3,11 @@ name = "smart_socet"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "socket_tcp"
+path = "src/main.rs"
+
 
 [dependencies]
+smart_home_lib = { path = "../../../library/smart_home_lib" }
+protocol = { path = "../../../library/protocol" }

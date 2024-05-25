@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
+members = [ "library/protocol",
     "library/smart_home_derive",
     "library/smart_home_lib",
     "src/examples/smart_home_server",
