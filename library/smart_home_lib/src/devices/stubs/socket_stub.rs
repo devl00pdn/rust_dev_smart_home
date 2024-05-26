@@ -42,6 +42,7 @@ impl Switchable for SocketStub {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }
+        self.power_consumption_wt = 2000.;
         Ok(true)
     }
 
@@ -50,6 +51,7 @@ impl Switchable for SocketStub {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }
+        self.power_consumption_wt = 0.;
         Ok(true)
     }
 
