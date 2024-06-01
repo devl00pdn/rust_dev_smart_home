@@ -28,7 +28,7 @@ pub mod device {
 
     #[derive(Debug)]
     pub struct Err {
-        pub(crate) msg: String,
+        pub msg: String,
     }
 
     impl Display for Err {

@@ -9,12 +9,13 @@ use crate::errors::{ConnectResult, RecvError, SendError};
 use crate::errors::ConnectError::BadHandshake;
 use crate::protocol;
 
+#[derive(Debug)]
 pub struct ClientStp {
     stream: TcpStream,
 }
 
 impl ClientStp {
-    pub fn handshake(mut stream: TcpStream) -> ConnectResult<Self> {
+    fn handshake(mut stream: TcpStream) -> ConnectResult<Self> {
         let msg = protocol::handshake_request_msg();
         stream.write_all(msg.as_bytes())?;
         stream.set_read_timeout(Some(Duration::from_secs(1)))?;
