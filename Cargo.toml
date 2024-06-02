@@ -1,12 +1,8 @@
-workspace = { members = ["smart_home_derive"] }
-[package]
-name = "rust_dev_smart_home"
-version = "0.1.0"
-edition = "2021"
-
-[[bin]]
-name = "smart_home"
-path = "src/main.rs"
-
-[dependencies]
-smart_home_derive = { path = "smart_home_derive" }
+[workspace]
+resolver = "2"
+members = [ "library/protocol",
+    "library/smart_home_derive",
+    "library/smart_home_lib",
+    "src/examples/smart_home_server",
+    "src/examples/smart_socet",
+]

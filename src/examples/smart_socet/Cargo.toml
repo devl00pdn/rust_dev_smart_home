@@ -1,0 +1,13 @@
+[package]
+name = "smart_socket_tcp"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "socket_tcp"
+path = "src/main.rs"
+
+
+[dependencies]
+smart_home_lib = { path = "../../../library/smart_home_lib" }
+protocol = { path = "../../../library/protocol" }

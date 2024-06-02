@@ -1,8 +1,8 @@
-use rust_dev_smart_home::common::traits::device::Switchable;
-use rust_dev_smart_home::devices::stubs::socket_stub::SocketStub;
-use rust_dev_smart_home::devices::stubs::thermometer_stub::ThermometerStub;
-use rust_dev_smart_home::house::House;
-use rust_dev_smart_home::house::room::Room;
+use smart_home_lib::common::traits::device::Switchable;
+use smart_home_lib::devices::stubs::socket_stub::SocketStub;
+use smart_home_lib::devices::stubs::thermometer_stub::ThermometerStub;
+use smart_home_lib::house::House;
+use smart_home_lib::house::room::Room;
 
 fn main() {
     let livingroom = Room::new("living room".to_string());
@@ -20,7 +20,7 @@ fn main() {
     println!("{}", home.make_report());
 
     socket.borrow_mut().online(false);
-    match socket.borrow().current_state() {
+    match socket.borrow_mut().current_state() {
         Ok(_) => {}
         Err(e) => { eprintln!("Error output: {}", e); }
     };

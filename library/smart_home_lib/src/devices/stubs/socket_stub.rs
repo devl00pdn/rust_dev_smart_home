@@ -28,7 +28,7 @@ impl SocketStub {
 }
 
 impl PowerConsumptionMeter for SocketStub {
-    fn power_consumption_wt(&self) -> OptReplay<f32> {
+    fn power_consumption_wt(&mut self) -> OptReplay<f32> {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }
@@ -42,6 +42,7 @@ impl Switchable for SocketStub {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }
+        self.power_consumption_wt = 2000.;
         Ok(true)
     }
 
@@ -50,10 +51,11 @@ impl Switchable for SocketStub {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }
+        self.power_consumption_wt = 0.;
         Ok(true)
     }
 
-    fn current_state(&self) -> Replay<bool> {
+    fn current_state(&mut self) -> Replay<bool> {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }
@@ -73,15 +75,15 @@ mod tests {
     #[test]
     fn methods() {
         let kitchen_socket = SocketStub::new("Kitchen".to_string());
-        assert!(!kitchen_socket.borrow().current_state().unwrap());
-        assert_eq!(kitchen_socket.borrow().power_consumption_wt().unwrap().unwrap(), 0.0);
+        assert!(!kitchen_socket.borrow_mut().current_state().unwrap());
+        assert_eq!(kitchen_socket.borrow_mut().power_consumption_wt().unwrap().unwrap(), 0.0);
         assert!(kitchen_socket.borrow_mut().turn_on().unwrap());
-        assert!(kitchen_socket.borrow().current_state().unwrap());
+        assert!(kitchen_socket.borrow_mut().current_state().unwrap());
         assert!(kitchen_socket.borrow_mut().turn_off().unwrap());
-        assert_eq!(kitchen_socket.borrow().description, "Kitchen".to_string());
-        assert!(!kitchen_socket.borrow().current_state().unwrap());
+        assert_eq!(kitchen_socket.borrow_mut().description, "Kitchen".to_string());
+        assert!(!kitchen_socket.borrow_mut().current_state().unwrap());
         kitchen_socket.borrow_mut().online(false);
-        assert!(kitchen_socket.borrow().current_state().is_err());
+        assert!(kitchen_socket.borrow_mut().current_state().is_err());
         assert!(kitchen_socket.borrow_mut().turn_on().is_err());
         assert!(kitchen_socket.borrow_mut().turn_off().is_err());
         kitchen_socket.borrow_mut().online(true);

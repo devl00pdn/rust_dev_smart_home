@@ -1,5 +1,5 @@
 pub trait Described {
-    fn description(&self) -> String {
+    fn description(&mut self) -> String {
         "none".to_string()
     }
 }
@@ -12,11 +12,11 @@ pub mod device {
     pub trait Switchable {
         fn turn_on(&mut self) -> Replay<bool>;
         fn turn_off(&mut self) -> Replay<bool>;
-        fn current_state(&self) -> Replay<bool>;
+        fn current_state(&mut self) -> Replay<bool>;
     }
 
     pub trait PowerConsumptionMeter {
-        fn power_consumption_wt(&self) -> OptReplay<f32>;
+        fn power_consumption_wt(&mut self) -> OptReplay<f32>;
     }
 
     pub trait Thermometer {
@@ -28,7 +28,7 @@ pub mod device {
 
     #[derive(Debug)]
     pub struct Err {
-        pub(crate) msg: String,
+        pub msg: String,
     }
 
     impl Display for Err {

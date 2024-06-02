@@ -1,0 +1,16 @@
+[package]
+name = "smart_home_server"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "server_example"
+path = "src/examples/main.rs"
+
+[[bin]]
+name = "server_tcp"
+path = "src/server_tcp/main.rs"
+
+[dependencies]
+smart_home_lib = { path = "../../../library/smart_home_lib" }
+protocol = { path = "../../../library/protocol" }
