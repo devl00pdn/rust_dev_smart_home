@@ -21,14 +21,12 @@ pub fn read_srt<Reader: Read>(mut reader: Reader) -> RecvResult {
         return Err(RecvError::from(io::Error::from(ErrorKind::BrokenPipe)));
     }
     let raw_str = String::from_utf8(buff).expect("error utf8 to str");
-    return match protocol::unwrap_message(&raw_str).map_err(|e| errors::RecvError::Other(e)) {
+    return match protocol::unwrap_message(&raw_str).map_err(RecvError::Other) {
         Ok(msgs) => {
-            if msgs.len() > 1 {
-                Ok(msgs.iter().map(|v| v.to_string() + ",").collect::<String>())
-            } else if msgs.len() == 1 {
-                Ok(msgs[0].clone())
-            } else {
-                Err(RecvError::BadEncoding)
+            match msgs.len() {
+                2.. => Ok(msgs.iter().map(|v| v.to_string() + ",").collect::<String>()),
+                1 => Ok(msgs[0].clone()),
+                _ => Err(RecvError::BadEncoding)
             }
         }
         Err(e) => { Err(e) }

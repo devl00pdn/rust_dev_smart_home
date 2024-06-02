@@ -12,7 +12,7 @@ use smart_home_lib::devices::stubs::socket_stub::SocketStub;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let addr: SocketAddr = "127.0.0.1:55331".parse()?;
-    println!("SmartSocket server_tcp running at addr {}", addr.to_string());
+    println!("SmartSocket server_tcp running at addr {}", addr);
     let socket_stub = SocketStub::new("Kitchen socket via tcp".to_string());
     let server = server::ServerStp::bind(addr)?;
     for connection_res in server.incoming() {
@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     println!("client {} disconnected", connection.peer_addr().unwrap());
                     break;
                 }
-                Err(e) => { println!("Error: {}", e.to_string()) }
+                Err(e) => { println!("Error: {}", e) }
             }
         }
     }

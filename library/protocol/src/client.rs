@@ -6,7 +6,6 @@ use std::time::Duration;
 use thiserror::Error;
 
 use crate::errors::{ConnectResult, RecvError, SendError};
-use crate::errors::ConnectError::BadHandshake;
 use crate::protocol;
 
 #[derive(Debug)]
@@ -23,9 +22,9 @@ impl ClientStp {
         let _n = stream.read(&mut buff)?;
         let resp_raw_mgs = String::from_utf8(Vec::from(buff)).expect("Error to convert msg to string");
         if !resp_raw_mgs.contains(protocol::handshake_respond_msg().as_str()) {
-            BadHandshake("Unexpected response".to_string());
+            "Unexpected response".to_string();
         }
-        return Ok(Self { stream });
+        Ok(Self { stream })
     }
 
     pub fn connect<Addr>(addr: Addr) -> ConnectResult<Self>

@@ -32,7 +32,7 @@ impl SocketTcp {
 
 impl PowerConsumptionMeter for SocketTcp {
     fn power_consumption_wt(&mut self) -> OptReplay<f32> {
-        let result = self.client.send_request("get_power_consumption_wt".to_string());
+        let result = self.client.send_request("get_power_consumption_wt");
         match result {
             Ok(val) => { Ok(Some(val.parse::<f32>().unwrap())) }
             Err(err) => {
@@ -45,24 +45,24 @@ impl PowerConsumptionMeter for SocketTcp {
 
 impl Switchable for SocketTcp {
     fn turn_on(&mut self) -> Replay<bool> {
-        let result = self.client.send_request("turn_on".to_string());
+        let result = self.client.send_request("turn_on");
         Self::handle_result(result)
     }
 
     fn turn_off(&mut self) -> Replay<bool> {
-        let result = self.client.send_request("turn_off".to_string());
+        let result = self.client.send_request("turn_off");
         Self::handle_result(result)
     }
 
     fn current_state(&mut self) -> Replay<bool> {
-        let result = self.client.send_request("get_state".to_string());
+        let result = self.client.send_request("get_state");
         Self::handle_result(result)
     }
 }
 
 impl Described for SocketTcp {
     fn description(&mut self) -> String {
-        let result = self.client.send_request("get_description".to_string());
+        let result = self.client.send_request("get_description");
         match result {
             Ok(val) => { val }
             Err(err) => {

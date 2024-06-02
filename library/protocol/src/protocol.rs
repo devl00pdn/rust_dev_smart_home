@@ -24,11 +24,11 @@ pub fn unwrap_message(raw_msg: &str) -> UMsgResult {
         let msg_body = msg_capture.get(1).map_or("", |m| m.as_str());
         parsed_msgs.push(msg_body.to_string())
     }
-    return if !parsed_msgs.is_empty() {
+    if !parsed_msgs.is_empty() {
         Ok(parsed_msgs)
     } else {
         Err("Parsing error".to_string())
-    };
+    }
 }
 
 pub fn wrap_message<Data: AsRef<str>>(msg: Data) -> String {
