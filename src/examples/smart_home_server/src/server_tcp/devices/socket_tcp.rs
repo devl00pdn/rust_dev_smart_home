@@ -1,6 +1,6 @@
 use std::net::ToSocketAddrs;
 
-use protocol::client::ClientStp;
+use protocol::client::{ClientStp, RequestResult};
 use protocol::errors::ConnectResult;
 use smart_home_lib::common::traits::Described;
 use smart_home_lib::common::traits::device::{OptReplay, PowerConsumptionMeter, Replay, Switchable};
@@ -15,17 +15,9 @@ impl SocketTcp {
     pub fn new<Addr: ToSocketAddrs>(addr: Addr) -> ConnectResult<Self> {
         Ok(Self { client: ClientStp::connect(addr)? })
     }
-}
 
-impl PowerConsumptionMeter for SocketTcp {
-    fn power_consumption_wt(&self) -> OptReplay<f32> {
-        todo!()
-    }
-}
-
-impl Switchable for SocketTcp {
-    fn turn_on(&mut self) -> Replay<bool> {
-        match self.client.send_request("turn_on".to_string()) {
+    fn handle_result(result: RequestResult) -> Replay<bool> {
+        match result {
             Ok(resp) => {
                 println!("{}", resp);
                 Ok(true)
@@ -36,19 +28,47 @@ impl Switchable for SocketTcp {
             }
         }
     }
+}
 
-    fn turn_off(&mut self) -> Replay<bool> {
-        todo!()
+impl PowerConsumptionMeter for SocketTcp {
+    fn power_consumption_wt(&mut self) -> OptReplay<f32> {
+        let result = self.client.send_request("get_power_consumption_wt".to_string());
+        match result {
+            Ok(val) => { Ok(Some(val.parse::<f32>().unwrap())) }
+            Err(err) => {
+                println!("{}", err);
+                Err(Err { msg: err.to_string() })
+            }
+        }
+    }
+}
+
+impl Switchable for SocketTcp {
+    fn turn_on(&mut self) -> Replay<bool> {
+        let result = self.client.send_request("turn_on".to_string());
+        Self::handle_result(result)
     }
 
-    fn current_state(&self) -> Replay<bool> {
-        todo!()
+    fn turn_off(&mut self) -> Replay<bool> {
+        let result = self.client.send_request("turn_off".to_string());
+        Self::handle_result(result)
+    }
+
+    fn current_state(&mut self) -> Replay<bool> {
+        let result = self.client.send_request("get_state".to_string());
+        Self::handle_result(result)
     }
 }
 
 impl Described for SocketTcp {
-    fn description(&self) -> String {
-        todo!()
+    fn description(&mut self) -> String {
+        let result = self.client.send_request("get_description".to_string());
+        match result {
+            Ok(val) => { val }
+            Err(err) => {
+                err.to_string()
+            }
+        }
     }
 }
 

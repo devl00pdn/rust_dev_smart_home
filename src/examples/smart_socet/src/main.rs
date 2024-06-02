@@ -51,17 +51,20 @@ fn process<Socket>(conn: &mut StpConnection, socket: SmartPointer<Socket>) -> Re
             }
         }
         "get_state" => {
-            match socket.borrow().current_state() {
+            match socket.borrow_mut().current_state() {
                 Ok(state) => { if state { "state: on".to_string() } else { "state: off".to_string() } }
                 Err(e) => { e.to_string() }
             }
         }
         "get_power_consumption_wt" => {
-            match socket.borrow().power_consumption_wt() {
-                Ok(Some(pwr)) => { format!("power_consumption_wt: {}", pwr) }
+            match socket.borrow_mut().power_consumption_wt() {
+                Ok(Some(pwr)) => { format!("{}", pwr) }
                 Err(e) => { e.to_string() }
                 _ => { "Unknown power_consumption".to_string() }
             }
+        }
+        "get_description" => {
+            socket.borrow_mut().description()
         }
         _ => { "Unknown request".to_string() }
     };

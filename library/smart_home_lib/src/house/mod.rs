@@ -28,7 +28,7 @@ impl House {
     }
 
     pub fn remove_room(&mut self, name: String) -> Result<(), &str> {
-        let room_position = self.rooms.iter().position(|room| room.borrow().description() == name);
+        let room_position = self.rooms.iter().position(|room| room.borrow_mut().description() == name);
         if let Some(rm_index) = room_position {
             let swapped_elem = self.rooms.pop_back().unwrap();
             if rm_index < self.rooms.len() {
@@ -42,8 +42,8 @@ impl House {
     pub fn make_report(&self) -> String {
         let mut report = String::new();
         for room in &self.rooms {
-            report = format!("{}{}:\n", report, room.borrow().description());
-            report = format!("{}{}\n", report, room.borrow().make_report());
+            report = format!("{}{}:\n", report, room.borrow_mut().description());
+            report = format!("{}{}\n", report, room.borrow_mut().make_report());
         }
         report
     }

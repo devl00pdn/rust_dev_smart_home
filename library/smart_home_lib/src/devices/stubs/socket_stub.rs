@@ -28,7 +28,7 @@ impl SocketStub {
 }
 
 impl PowerConsumptionMeter for SocketStub {
-    fn power_consumption_wt(&self) -> OptReplay<f32> {
+    fn power_consumption_wt(&mut self) -> OptReplay<f32> {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }
@@ -55,7 +55,7 @@ impl Switchable for SocketStub {
         Ok(true)
     }
 
-    fn current_state(&self) -> Replay<bool> {
+    fn current_state(&mut self) -> Replay<bool> {
         if !self.connection_state_emulation {
             return Err(Err { msg: "Device not respond".to_string() });
         }

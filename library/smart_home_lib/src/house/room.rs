@@ -12,7 +12,7 @@ pub struct Room {
 }
 
 impl Described for Room {
-    fn description(&self) -> String {
+    fn description(&mut self) -> String {
         self.name.clone()
     }
 }
@@ -27,7 +27,7 @@ impl Room {
     }
 
     pub fn remove_device(&mut self, name: String) -> Result<(), Err> {
-        let element_position = self.devices.iter().position(|dev| dev.borrow().description() == name);
+        let element_position = self.devices.iter().position(|dev| dev.borrow_mut().description() == name);
         if let Some(remove_pos) = element_position {
             let swapped_elem = self.devices.pop_back().unwrap();
             if remove_pos < self.devices.len() {
@@ -41,7 +41,7 @@ impl Room {
     pub fn make_report(&self) -> String {
         let mut report = String::new();
         for device in &self.devices {
-            let desc = device.borrow().description();
+            let desc = device.borrow_mut().description();
             report = format!("{}{}\n", report, desc);
         }
         report

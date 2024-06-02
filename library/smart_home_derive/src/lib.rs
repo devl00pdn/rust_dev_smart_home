@@ -34,7 +34,7 @@ pub fn described(input: TokenStream) -> TokenStream {
     // Build the output, possibly using quasi-quotation
     let expanded = quote! {
         impl Described for #name {
-            fn description(&self) -> String{
+            fn description(&mut self) -> String{
                 self.description.clone()
             }
         }

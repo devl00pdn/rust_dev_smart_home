@@ -1,5 +1,5 @@
 [package]
-name = "smart_socet"
+name = "smart_socket_tcp"
 version = "0.1.0"
 edition = "2021"
 
