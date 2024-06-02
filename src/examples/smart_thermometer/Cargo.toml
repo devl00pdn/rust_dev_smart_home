@@ -1,0 +1,12 @@
+[package]
+name = "smart_thermometer"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "thermometer_udp"
+path = "src/main.rs"
+
+[dependencies]
+smart_home_lib = { path = "../../../library/smart_home_lib" }
+protocol = { path = "../../../library/protocol" }
