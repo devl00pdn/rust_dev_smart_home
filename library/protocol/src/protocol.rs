@@ -1,6 +1,6 @@
 use regex::Regex;
 
-pub const HANDSHAKE_REQUEST: &str = "hi_server/";
+pub const HANDSHAKE_REQUEST: &str = "hi_server";
 pub const HANDSHAKE_RESPOND: &str = "hi_client";
 pub const WRAPPING_SYMBOLS: &str = "@@";
 

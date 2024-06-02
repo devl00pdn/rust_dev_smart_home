@@ -20,7 +20,7 @@ fn main() {
     println!("{}", home.make_report());
 
     socket.borrow_mut().online(false);
-    match socket.borrow().current_state() {
+    match socket.borrow_mut().current_state() {
         Ok(_) => {}
         Err(e) => { eprintln!("Error output: {}", e); }
     };
