@@ -1,43 +1,15 @@
-use std::{io, thread, time};
+use std::{thread, time};
 use std::error::Error;
-use std::net::{SocketAddr, UdpSocket};
+use std::net::SocketAddr;
 
-use devices::socket_tcp::SocketTcp;
 use smart_home_lib::common::traits::Described;
 use smart_home_lib::common::traits::device::{PowerConsumptionMeter, Switchable};
-
-mod devices;
-
-
-fn thermo_udp_listener() -> Result<(), io::Error> {
-    let socket = UdpSocket::bind("127.0.0.1:34255").map_err(|e| {
-        println!("Error. udp socket bind failed");
-        e
-    })?;
-    println!("Receiving temp from udp thermometer 5 times...");
-    let mut exit_counter = 0;
-    loop {
-        let mut buf = [0; 255];
-        let len = socket.recv(&mut buf)?;
-        if len == 0 {
-            continue;
-        }
-        let mgs_raw = &buf[..len];
-        let msgs_vec = protocol::protocol::unwrap_message(std::str::from_utf8(mgs_raw).unwrap()).unwrap_or(vec!["".to_string()]);
-        for msg in msgs_vec {
-            println!("Received temperature: {}", msg);
-        }
-        exit_counter += 1;
-        if exit_counter >= 5 {
-            return Ok(());
-        }
-    }
-}
+use smart_home_lib::devices::socket_tcp::SocketTcp;
+use smart_home_lib::devices::thermometer_udp::ThermometerUdp;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening smart thermometr over udp...");
-    let _ = thread::spawn(move || -> Result<(), io::Error> { thermo_udp_listener() }).join();
-
+    let _thermometer_udp = ThermometerUdp::new("127.0.0.1:34255");
     println!("Connecting to smart socket over tcp...");
 
     let addr: SocketAddr = "127.0.0.1:55331".parse()?;
