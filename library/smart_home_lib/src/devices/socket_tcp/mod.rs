@@ -2,10 +2,11 @@ use std::net::ToSocketAddrs;
 
 use protocol::client::{ClientStp, RequestResult};
 use protocol::errors::ConnectResult;
-use smart_home_lib::common::traits::Described;
-use smart_home_lib::common::traits::device::{OptReplay, PowerConsumptionMeter, Replay, Switchable};
-use smart_home_lib::common::traits::device::Err;
-use smart_home_lib::devices::socket::SocketTrait;
+
+use crate::common::traits::Described;
+use crate::common::traits::device::{OptReplay, PowerConsumptionMeter, Replay, Switchable};
+use crate::common::traits::device::Err;
+use crate::devices::socket::SocketTrait;
 
 pub struct SocketTcp {
     client: ClientStp,
