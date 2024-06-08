@@ -44,7 +44,6 @@ impl ThermometerUdp {
                 if let Ok(mut thermometer) = thermometer_cloned.lock() {
                     for msg in msgs_vec {
                         if let Ok(temp_c) = f32::from_str(msg.as_str()) {
-                            println!("Temperature updated:  {}", msg);
                             thermometer.update_temp_c(temp_c)
                         }
                     }
