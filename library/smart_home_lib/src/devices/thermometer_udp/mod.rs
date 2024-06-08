@@ -27,7 +27,7 @@ impl ThermometerUdp {
         socket.set_read_timeout(Some(Duration::from_secs(1)))?;
         let thread_stop = Arc::new(AtomicBool::default());
         let thread_stop_cloned = thread_stop.clone();
-        let thermometer = Arc::new(Mutex::new(Thermometer::default()));
+        let thermometer = Arc::new(Mutex::new(Thermometer::new()));
         let thermometer_cloned = thermometer.clone();
         let _ = thread::spawn(move || -> Result<(), Error> {
             loop {
@@ -65,8 +65,14 @@ pub struct Thermometer {
     is_updated: bool,
 }
 
+impl Default for Thermometer {
+    fn default() -> Self {
+        Thermometer::new()
+    }
+}
+
 impl Thermometer {
-    pub fn default() -> Thermometer {
+    pub fn new() -> Thermometer {
         Self { temp_c: 0.0, is_updated: false }
     }
 
@@ -79,7 +85,7 @@ impl Thermometer {
 impl crate::common::traits::device::Thermometer for ThermometerUdp {
     fn temperature_deg_celsius(&self) -> OptReplay<f32> {
         if let Ok(thermometer) = self.thermometer.lock() {
-            if thermometer.is_updated == false {
+            if !thermometer.is_updated {
                 return Ok(None);
             }
             return Ok(Some(thermometer.temp_c));
