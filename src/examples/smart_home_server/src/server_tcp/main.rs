@@ -10,7 +10,7 @@ mod devices;
 
 
 fn thermo_udp_listener() -> Result<(), io::Error> {
-    let socket = UdpSocket::bind("127.0.0.1:34254").map_err(|e| {
+    let socket = UdpSocket::bind("127.0.0.1:34255").map_err(|e| {
         println!("Error. udp socket bind failed");
         e
     })?;
@@ -35,7 +35,8 @@ fn thermo_udp_listener() -> Result<(), io::Error> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let _ = thread::spawn(move || -> Result<(), io::Error> { thermo_udp_listener() }).join().map_err(|_| println!("Something goes wrong.."));
+    println!("Listening smart thermometr over udp...");
+    let _ = thread::spawn(move || -> Result<(), io::Error> { thermo_udp_listener() }).join();
 
     println!("Connecting to smart socket over tcp...");
 
