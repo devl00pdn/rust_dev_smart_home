@@ -5,11 +5,12 @@ use std::net::SocketAddr;
 use smart_home_lib::common::traits::Described;
 use smart_home_lib::common::traits::device::{PowerConsumptionMeter, Switchable, Thermometer};
 use smart_home_lib::devices::socket_tcp::SocketTcp;
-use smart_home_lib::devices::thermometer_udp::ThermometerUdp;
+use smart_home_lib::devices::thermometer_udp::thermo_udp_async::ThermometerUdp;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening smart thermometr over udp...");
-    let thermometer_udp = ThermometerUdp::new("127.0.0.1:34255")?;
+    let thermometer_udp = ThermometerUdp::new("127.0.0.1:34255").await?;
     thread::sleep(time::Duration::from_secs(1));
     println!("Connecting to smart socket over tcp...");
     let addr: SocketAddr = "127.0.0.1:55331".parse()?;

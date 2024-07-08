@@ -14,3 +14,4 @@ path = "src/server_tcp/main.rs"
 [dependencies]
 smart_home_lib = { path = "../../../library/smart_home_lib" }
 protocol = { path = "../../../library/protocol" }
+tokio = { version = "1.38.0", features = ["rt", "rt-multi-thread", "macros"] }
