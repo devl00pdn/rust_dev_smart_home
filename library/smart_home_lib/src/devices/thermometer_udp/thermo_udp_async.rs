@@ -1,14 +1,15 @@
 use std::io::Error;
 use std::str::FromStr;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use async_trait::async_trait;
 use tokio::net::{ToSocketAddrs, UdpSocket};
+use tokio::sync::Mutex;
 
-use crate::common::traits::Described;
-use crate::common::traits::device::Err;
 use crate::common::traits::device::OptReplay;
-use crate::devices::thermometer::TemperatureSensorTrait;
+use crate::common::traits_async::Described;
+use crate::devices::thermometer::TemperatureSensorTraitAsync;
 
 pub struct ThermometerUdp {
     thread_stop: Arc<AtomicBool>,
@@ -40,11 +41,10 @@ impl ThermometerUdp {
                 }
                 let mgs_raw = &buf[..len];
                 let msgs_vec = protocol::protocol::unwrap_message(std::str::from_utf8(mgs_raw).unwrap()).unwrap_or(vec!["".to_string()]);
-                if let Ok(mut thermometer) = thermometer_cloned.lock() {
-                    for msg in msgs_vec {
-                        if let Ok(temp_c) = f32::from_str(msg.as_str()) {
-                            thermometer.update_temp_c(temp_c)
-                        }
+                let mut thermometer = thermometer_cloned.lock().await;
+                for msg in msgs_vec {
+                    if let Ok(temp_c) = f32::from_str(msg.as_str()) {
+                        thermometer.update_temp_c(temp_c)
                     }
                 }
             }
@@ -81,18 +81,17 @@ impl Thermometer {
     }
 }
 
-impl crate::common::traits::device::Thermometer for ThermometerUdp {
-    fn temperature_deg_celsius(&self) -> OptReplay<f32> {
-        if let Ok(thermometer) = self.thermometer.lock() {
-            if !thermometer.is_updated {
-                return Ok(None);
-            }
-            return Ok(Some(thermometer.temp_c));
+#[async_trait]
+impl crate::common::traits_async::device::Thermometer for ThermometerUdp {
+    async fn temperature_deg_celsius(&self) -> OptReplay<f32> {
+        let thermometer = self.thermometer.lock().await;
+        if !thermometer.is_updated {
+            return Ok(None);
         }
-        Err(Err { msg: "mutex lock failed".to_string() })
+        return Ok(Some(thermometer.temp_c));
     }
 }
 
 impl Described for ThermometerUdp {}
 
-impl TemperatureSensorTrait for ThermometerUdp {}
+impl TemperatureSensorTraitAsync for ThermometerUdp {}

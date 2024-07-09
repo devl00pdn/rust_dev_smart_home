@@ -4,6 +4,7 @@ use std::ops::Deref;
 
 use thiserror::Error;
 
+use crate::client_std::{read_srt, send_str};
 use crate::errors::{ConnectError, ConnectResult, RecvResult, SendResult};
 
 pub struct ServerStp {
@@ -12,7 +13,9 @@ pub struct ServerStp {
 
 impl ServerStp {
     pub fn bind<Addr>(addr: Addr) -> BindResult
-        where Addr: ToSocketAddrs {
+    where
+        Addr: ToSocketAddrs,
+    {
         let tcp = TcpListener::bind(addr)?;
         Ok(Self { tcp })
     }
@@ -26,11 +29,11 @@ impl ServerStp {
     }
 
     pub fn try_handshake(stream: TcpStream) -> ConnectResult<StpConnection> {
-        let handshake_req_msg = crate::read_srt(&stream).map_err(|e| ConnectError::BadHandshake(e.to_string()))?;
+        let handshake_req_msg = read_srt(&stream).map_err(|e| ConnectError::BadHandshake(e.to_string()))?;
         if !handshake_req_msg.eq(crate::protocol::HANDSHAKE_REQUEST) {
             return Err(ConnectError::BadHandshake("Handshake request not matched".to_string()));
         }
-        let _ = crate::send_str(&stream, crate::protocol::HANDSHAKE_RESPOND);
+        let _ = send_str(&stream, crate::protocol::HANDSHAKE_RESPOND);
         Ok(StpConnection { stream })
     }
 }
@@ -51,11 +54,11 @@ pub struct StpConnection {
 
 impl StpConnection {
     pub fn send_response<Resp: AsRef<str>>(&mut self, response: Resp) -> SendResult {
-        crate::send_str(&mut self.stream, response)
+        send_str(&mut self.stream, response)
     }
 
     pub fn revc_request(&mut self) -> RecvResult {
-        crate::read_srt(&mut self.stream)
+        read_srt(&mut self.stream)
     }
 }
 

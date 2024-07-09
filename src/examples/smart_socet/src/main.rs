@@ -2,10 +2,10 @@ use std::error::Error;
 use std::io::ErrorKind;
 use std::net::SocketAddr;
 
-use protocol::client::{RequestError, RequestResult};
+use protocol::client_std::{RequestError, RequestResult};
 use protocol::errors::RecvError;
-use protocol::server;
-use protocol::server::StpConnection;
+use protocol::server_std;
+use protocol::server_std::StpConnection;
 use smart_home_lib::common::types::SmartPointer;
 use smart_home_lib::devices::socket::SocketTrait;
 use smart_home_lib::devices::stubs::socket_stub::SocketStub;
@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let addr: SocketAddr = "127.0.0.1:55331".parse()?;
     println!("SmartSocket server_tcp running at addr {}", addr);
     let socket_stub = SocketStub::new("Kitchen socket via tcp".to_string());
-    let server = server::ServerStp::bind(addr)?;
+    let server = server_std::ServerStp::bind(addr)?;
     for connection_res in server.incoming() {
         let mut connection = connection_res?;
         println!("client connected from: {}", connection.peer_addr().unwrap());
@@ -33,7 +33,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn process<Socket>(conn: &mut StpConnection, socket: SmartPointer<Socket>) -> RequestResult
-    where Socket: SocketTrait {
+where
+    Socket: SocketTrait,
+{
     let req = conn.revc_request()?;
     println!("{}", req);
 
