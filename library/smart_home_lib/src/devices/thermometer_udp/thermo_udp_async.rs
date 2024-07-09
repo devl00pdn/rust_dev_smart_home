@@ -14,6 +14,7 @@ use crate::devices::thermometer::TemperatureSensorTraitAsync;
 pub struct ThermometerUdp {
     thread_stop: Arc<AtomicBool>,
     thermometer: Arc<Mutex<Thermometer>>,
+    handle: tokio::task::JoinHandle<Result<(), Error>>,
 }
 
 impl ThermometerUdp {
@@ -29,7 +30,7 @@ impl ThermometerUdp {
         let thread_stop_cloned = thread_stop.clone();
         let thermometer = Arc::new(Mutex::new(Thermometer::new()));
         let thermometer_cloned = thermometer.clone();
-        let _: tokio::task::JoinHandle<Result<(), Error>> = tokio::spawn(async move {
+        let handle = tokio::spawn(async move {
             loop {
                 if thread_stop_cloned.load(Ordering::SeqCst) {
                     return Ok(());
@@ -49,13 +50,14 @@ impl ThermometerUdp {
                 }
             }
         });
-        Ok(Self { thread_stop, thermometer })
+        Ok(Self { thread_stop, thermometer, handle })
     }
 }
 
 impl Drop for ThermometerUdp {
     fn drop(&mut self) {
-        self.thread_stop.store(true, Ordering::SeqCst)
+        self.thread_stop.store(true, Ordering::SeqCst);
+        self.handle.abort();
     }
 }
 

@@ -11,6 +11,10 @@ path = "src/examples/main.rs"
 name = "server_tcp"
 path = "src/server_tcp/main.rs"
 
+[[bin]]
+name = "server_tcp_async"
+path = "src/server_tcp_async/main.rs"
+
 [dependencies]
 smart_home_lib = { path = "../../../library/smart_home_lib" }
 protocol = { path = "../../../library/protocol" }
