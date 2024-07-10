@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 smart_home_derive = { path = "../smart_home_derive" }
 protocol = { path = "../protocol" }
+tokio = { version = "1.38.0", features = ["full"] }
+async-trait = "0.1.81"

@@ -4,8 +4,8 @@ use std::net::SocketAddr;
 
 use smart_home_lib::common::traits::Described;
 use smart_home_lib::common::traits::device::{PowerConsumptionMeter, Switchable, Thermometer};
-use smart_home_lib::devices::socket_tcp::SocketTcp;
-use smart_home_lib::devices::thermometer_udp::ThermometerUdp;
+use smart_home_lib::devices::socket_tcp::socket_std::SocketTcp;
+use smart_home_lib::devices::thermometer_udp::thermo_udp_thread::ThermometerUdp;
 
 fn main() -> Result<(), Box<dyn Error>> {
     println!("Listening smart thermometr over udp...");
