@@ -22,6 +22,13 @@ impl SocketStub {
         Rc::new(RefCell::new(SocketStub { power_consumption_wt: 0.0, state: false, description: desc, connection_state_emulation: true }))
     }
 
+    pub fn new_with_wrap<Wrapper, WrapperNew>(desc: String, create: WrapperNew) -> Wrapper
+    where
+        WrapperNew: Fn(SocketStub) -> Wrapper,
+    {
+        create(SocketStub { power_consumption_wt: 0.0, state: false, description: desc, connection_state_emulation: true })
+    }
+
     pub fn online(&mut self, state: bool) {
         self.connection_state_emulation = state
     }

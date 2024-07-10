@@ -26,11 +26,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     sleep(Duration::from_millis(500)).await;
     println!("> Request socket state");
     let (temp_c, _) = tokio::join!(thermometer_udp.temperature_deg_celsius(), socket_tcp.current_state());
-    println!("Current temperature:  {}", temp_c?.unwrap_or(0.0));
+    println!("Current temperature:  {:?}", temp_c?);
 
     sleep(Duration::from_millis(500)).await;
     println!("> Request socket power consumption");
-    let (pwr, temp) = tokio::join!(socket_tcp.power_consumption_wt(), thermometer_udp.temperature_deg_celsius());
+    let (pwr, temp_c) = tokio::join!(socket_tcp.power_consumption_wt(), thermometer_udp.temperature_deg_celsius());
     match pwr? {
         None => {
             println!("socket power consumption wt: unknown");
@@ -39,12 +39,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
             println!("socket power consumption wt: {}", resp);
         }
     }
-    println!("Current temperature:  {}", temp?.unwrap_or(0.0));
+    println!("Current temperature:  {:?}", temp_c?);
     println!("> turn off socket");
     let _ = socket_tcp.turn_off().await?;
     sleep(Duration::from_millis(500)).await;
     println!("> Request socket state");
-    let (_, temp) = tokio::join!(socket_tcp.current_state(), thermometer_udp.temperature_deg_celsius());
-    println!("Current temperature:  {}", temp?.unwrap_or(0.0));
+    let (_, temp_c) = tokio::join!(socket_tcp.current_state(), thermometer_udp.temperature_deg_celsius());
+    println!("Current temperature:  {:?}", temp_c?);
     Ok(())
 }

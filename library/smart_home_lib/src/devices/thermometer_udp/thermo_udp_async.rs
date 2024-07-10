@@ -2,10 +2,12 @@ use std::io::Error;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 
 use async_trait::async_trait;
 use tokio::net::{ToSocketAddrs, UdpSocket};
 use tokio::sync::Mutex;
+use tokio::time;
 
 use crate::common::traits::device::OptReplay;
 use crate::common::traits_async::Described;
@@ -36,10 +38,21 @@ impl ThermometerUdp {
                     return Ok(());
                 }
                 let mut buf = [0; 255];
-                let len = socket.recv(&mut buf).await?;
+                let len = match time::timeout(Duration::from_secs(1), socket.recv(&mut buf))
+                    .await {
+                    Ok(Ok(len)) => {
+                        len
+                    }
+                    Err(_) => {
+                        println!("Temperature receive timeout");
+                        0
+                    }
+                    _ => { 0 }
+                };
                 if len == 0 {
                     continue;
                 }
+
                 let mgs_raw = &buf[..len];
                 let msgs_vec = protocol::protocol::unwrap_message(std::str::from_utf8(mgs_raw).unwrap()).unwrap_or(vec!["".to_string()]);
                 let mut thermometer = thermometer_cloned.lock().await;

@@ -5,8 +5,13 @@ edition = "2021"
 
 [[bin]]
 name = "thermometer_udp"
-path = "src/main.rs"
+path = "src/thread/main.rs"
+
+[[bin]]
+name = "thermometer_udp_async"
+path = "src/async/main.rs"
 
 [dependencies]
 smart_home_lib = { path = "../../../library/smart_home_lib" }
 protocol = { path = "../../../library/protocol" }
+tokio = { version = "1.38.0", features = ["rt", "rt-multi-thread", "macros"] }
