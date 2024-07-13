@@ -56,6 +56,7 @@ impl Room {
 #[cfg(test)]
 mod tests {
     use crate::devices::stubs::socket_stub::SocketStub;
+    use crate::devices::stubs::thermometer_stub::ThermometerStub;
 
     use super::*;
 
@@ -63,7 +64,7 @@ mod tests {
     fn add_and_remove_devices() {
         let room = Room::new("living room".to_string());
         let socket = SocketStub::new("base socket".to_string());
-        let term = SocketStub::new("base thermometer".to_string());
+        let term = ThermometerStub::new("base thermometer".to_string());
 
         room.borrow_mut().add_device(socket.clone());
         room.borrow_mut().add_device(term.clone());

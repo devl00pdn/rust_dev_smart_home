@@ -6,6 +6,7 @@ use crate::common::traits::Described;
 use crate::house::room::Room;
 
 pub mod room;
+pub mod room_static;
 
 pub struct House {
     rooms: LinkedList<Rc<RefCell<Room>>>,
