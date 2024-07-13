@@ -15,7 +15,9 @@ pub struct SpWrapper<T> {
 
 impl<T> SpWrapper<T> {
     pub fn new(v: T) -> Self {
-        Self { sp: SmartPointer::new(RefCell::new(v)) }
+        Self {
+            sp: SmartPointer::new(RefCell::new(v)),
+        }
     }
 
     pub fn new_from_sp(sp: SmartPointer<T>) -> Self {
@@ -37,13 +39,36 @@ impl<T> DerefMut for SpWrapper<T> {
     }
 }
 
+impl<T> From<SpWrapper<SocketStub>> for Device<T>
+where
+    T: DeviceTypes<Socket = SocketStub>,
+{
+    fn from(value: SpWrapper<SocketStub>) -> Self {
+        Device::Socket(value)
+    }
+}
+
+impl<T> From<SpWrapper<ThermometerStub>> for Device<T>
+where
+    T: DeviceTypes<Thermometer = ThermometerStub>,
+{
+    fn from(value: SpWrapper<ThermometerStub>) -> Self {
+        Device::Thermometer(value)
+    }
+}
+
+impl<T> From<SmartPointer<T>> for SpWrapper<T> {
+    fn from(value: SmartPointer<T>) -> Self {
+        Self::new_from_sp(value)
+    }
+}
+
 pub trait DeviceTypes {
     type Socket: SocketTrait;
     type Thermometer: TemperatureSensorTrait;
 }
 
-pub enum Device<T: DeviceTypes>
-{
+pub enum Device<T: DeviceTypes> {
     Socket(SpWrapper<T::Socket>),
     Thermometer(SpWrapper<T::Thermometer>),
 }
@@ -52,7 +77,6 @@ pub struct Room<T: DeviceTypes> {
     name: String,
     devices: LinkedList<Device<T>>,
 }
-
 
 struct RoomStub;
 
@@ -63,7 +87,10 @@ impl DeviceTypes for RoomStub {
 
 impl<T: DeviceTypes> Room<T> {
     pub fn new(name: String) -> SpWrapper<Self> {
-        SpWrapper::new(Self { name, devices: LinkedList::new() })
+        SpWrapper::new(Self {
+            name,
+            devices: LinkedList::new(),
+        })
     }
 
     pub fn name(&self) -> String {
@@ -74,12 +101,13 @@ impl<T: DeviceTypes> Room<T> {
         self.devices.push_back(device)
     }
 
-    pub fn remove_device(&mut self, name: String) -> Result<(), crate::common::traits::device::Err> {
-        let element_position = self.devices.iter_mut().position(|dev| {
-            match dev {
-                Device::Socket(d) => { d.borrow_mut().description() == name }
-                Device::Thermometer(d) => { d.borrow_mut().description() == name }
-            }
+    pub fn remove_device(
+        &mut self,
+        name: String,
+    ) -> Result<(), crate::common::traits::device::Err> {
+        let element_position = self.devices.iter_mut().position(|dev| match dev {
+            Device::Socket(d) => d.borrow_mut().description() == name,
+            Device::Thermometer(d) => d.borrow_mut().description() == name,
         });
         if let Some(remove_pos) = element_position {
             let swapped_elem = self.devices.pop_back().unwrap();
@@ -88,18 +116,20 @@ impl<T: DeviceTypes> Room<T> {
             }
             return Ok(());
         }
-        Err(crate::common::traits::device::Err { msg: "Device to remove not found".to_string() })
+        Err(crate::common::traits::device::Err {
+            msg: "Device to remove not found".to_string(),
+        })
     }
 
     pub fn make_report(&mut self) -> String {
         let mut report = String::new();
 
-        self.visit_mut(|device| {
-            match device {
-                Device::Socket(d) => {
-                    report = format!("{}{}\n", report, d.borrow_mut().description());
-                }
-                Device::Thermometer(d) => { report = format!("{}{}\n", report, d.borrow_mut().description()); }
+        self.visit_mut(|device| match device {
+            Device::Socket(d) => {
+                report = format!("{}{}\n", report, d.borrow_mut().description());
+            }
+            Device::Thermometer(d) => {
+                report = format!("{}{}\n", report, d.borrow_mut().description());
             }
         });
         report
@@ -109,8 +139,8 @@ impl<T: DeviceTypes> Room<T> {
     where
         F: FnMut(&mut Device<T>),
     {
-        for mut device in &mut self.devices {
-            visitor(&mut device)
+        for device in &mut self.devices {
+            visitor(device)
         }
     }
 
@@ -119,33 +149,8 @@ impl<T: DeviceTypes> Room<T> {
         F: Fn(&Device<T>),
     {
         for device in &self.devices {
-            visitor(&device)
+            visitor(device)
         }
-    }
-}
-
-impl<T> From<SpWrapper<SocketStub>> for Device<T>
-where
-    T: DeviceTypes<Socket=SocketStub>,
-{
-    fn from(value: SpWrapper<SocketStub>) -> Self {
-        Device::Socket(value)
-    }
-}
-
-
-impl<T> From<SpWrapper<ThermometerStub>> for Device<T>
-where
-    T: DeviceTypes<Thermometer=ThermometerStub>,
-{
-    fn from(value: SpWrapper<ThermometerStub>) -> Self {
-        Device::Thermometer(value)
-    }
-}
-
-impl<T> From<SmartPointer<T>> for SpWrapper<T> {
-    fn from(value: SmartPointer<T>) -> Self {
-        Self::new_from_sp(value)
     }
 }
 
@@ -160,15 +165,21 @@ mod tests {
     fn add_and_remove_devices() {
         let mut room = Room::<RoomStub>::new("living room".to_string());
         let socket: SpWrapper<SocketStub> = SocketStub::new("base socket".to_string()).into();
-        let term: SpWrapper<ThermometerStub> = ThermometerStub::new("base thermometer".to_string()).into();
+        let term: SpWrapper<ThermometerStub> =
+            ThermometerStub::new("base thermometer".to_string()).into();
 
         room.borrow_mut().add_device(socket.into());
         room.borrow_mut().add_device(term.into());
         let report = room.deref_mut().borrow_mut().make_report();
+
         assert_eq!("base socket\nbase thermometer\n", report);
 
         // check error on remove not existed device
-        if let Err(err) = room.deref_mut().borrow_mut().remove_device("not_added_device_name".to_string()) {
+        if let Err(err) = room
+            .deref_mut()
+            .borrow_mut()
+            .remove_device("not_added_device_name".to_string())
+        {
             assert_eq!("Device to remove not found", err.msg);
         };
         // check report hasn't changed
@@ -176,7 +187,11 @@ mod tests {
         assert_eq!("base socket\nbase thermometer\n", report);
 
         // remove device - base socket
-        if let Err(err) = room.deref_mut().borrow_mut().remove_device("base thermometer".to_string()) {
+        if let Err(err) = room
+            .deref_mut()
+            .borrow_mut()
+            .remove_device("base thermometer".to_string())
+        {
             panic!("{}", err);
         };
 
@@ -185,7 +200,11 @@ mod tests {
         assert_eq!("base socket\n", report);
 
         // remove device - base thermometer
-        if let Err(err) = room.deref_mut().borrow_mut().remove_device("base socket".to_string()) {
+        if let Err(err) = room
+            .deref_mut()
+            .borrow_mut()
+            .remove_device("base socket".to_string())
+        {
             panic!("{}", err);
         };
         // check base thermometer has deleted
@@ -193,11 +212,12 @@ mod tests {
         assert_eq!("", report);
 
         // check error on remove empty device list
-        if let Err(err) = room.deref_mut().borrow_mut().remove_device("base thermometer".to_string()) {
+        if let Err(err) = room
+            .deref_mut()
+            .borrow_mut()
+            .remove_device("base thermometer".to_string())
+        {
             assert_eq!("Device to remove not found", err.msg);
         };
     }
 }
-
-
-
