@@ -50,7 +50,7 @@ pub enum Device<T: DeviceTypes>
 
 pub struct Room<T: DeviceTypes> {
     name: String,
-    devices: LinkedList<SpWrapper<Device<T>>>,
+    devices: LinkedList<Device<T>>,
 }
 
 
@@ -70,15 +70,14 @@ impl<T: DeviceTypes> Room<T> {
         self.name.clone()
     }
 
-    pub fn add_device(&mut self, device: SpWrapper<Device<T>>) {
+    pub fn add_device(&mut self, device: Device<T>) {
         self.devices.push_back(device)
     }
 
     pub fn remove_device(&mut self, name: String) -> Result<(), crate::common::traits::device::Err> {
         let element_position = self.devices.iter_mut().position(|dev| {
-            // let a = dev.deref_mut().borrow_mut().deref_mut()
-            match dev.deref_mut().borrow_mut().deref_mut() {
-                Device::Socket(d) => { let a = d.deref_mut() }
+            match dev {
+                Device::Socket(d) => { d.borrow_mut().description() == name }
                 Device::Thermometer(d) => { d.borrow_mut().description() == name }
             }
         });
@@ -93,12 +92,14 @@ impl<T: DeviceTypes> Room<T> {
     }
 
     pub fn make_report(&mut self) -> String {
-        let report = String::new();
+        let mut report = String::new();
 
         self.visit_mut(|device| {
-            match device.deref_mut().deref_mut().borrow_mut().deref_mut() {
-                Device::Socket(d) => { format!("{}{}\n", report, d.borrow_mut().description()); }
-                Device::Thermometer(d) => { format!("{}{}\n", report, d.borrow_mut().description()); }
+            match device {
+                Device::Socket(d) => {
+                    report = format!("{}{}\n", report, d.borrow_mut().description());
+                }
+                Device::Thermometer(d) => { report = format!("{}{}\n", report, d.borrow_mut().description()); }
             }
         });
         report
@@ -106,7 +107,7 @@ impl<T: DeviceTypes> Room<T> {
 
     pub fn visit_mut<F>(&mut self, mut visitor: F)
     where
-        F: FnMut(&mut SpWrapper<Device<T>>),
+        F: FnMut(&mut Device<T>),
     {
         for mut device in &mut self.devices {
             visitor(&mut device)
@@ -115,7 +116,7 @@ impl<T: DeviceTypes> Room<T> {
 
     pub fn visit<F>(&mut self, visitor: F)
     where
-        F: Fn(&SpWrapper<Device<T>>),
+        F: Fn(&Device<T>),
     {
         for device in &self.devices {
             visitor(&device)
@@ -123,22 +124,22 @@ impl<T: DeviceTypes> Room<T> {
     }
 }
 
-impl<T> From<SpWrapper<SocketStub>> for SpWrapper<Device<T>>
+impl<T> From<SpWrapper<SocketStub>> for Device<T>
 where
     T: DeviceTypes<Socket=SocketStub>,
 {
     fn from(value: SpWrapper<SocketStub>) -> Self {
-        SpWrapper::new(Device::Socket(value))
+        Device::Socket(value)
     }
 }
 
 
-impl<T> From<SpWrapper<ThermometerStub>> for SpWrapper<Device<T>>
+impl<T> From<SpWrapper<ThermometerStub>> for Device<T>
 where
     T: DeviceTypes<Thermometer=ThermometerStub>,
 {
     fn from(value: SpWrapper<ThermometerStub>) -> Self {
-        SpWrapper::new(Device::Thermometer(value))
+        Device::Thermometer(value)
     }
 }
 
@@ -163,7 +164,6 @@ mod tests {
 
         room.borrow_mut().add_device(socket.into());
         room.borrow_mut().add_device(term.into());
-
         let report = room.deref_mut().borrow_mut().make_report();
         assert_eq!("base socket\nbase thermometer\n", report);
 
