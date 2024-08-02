@@ -12,6 +12,8 @@ pub enum CustomError {
     NotFound(String),
     #[error("Internal server error: {0}")]
     InternalError(String),
+    #[error("Not implemented device type: {0}")]
+    DeviceTypeError(String),
 }
 
 impl ResponseError for CustomError {
@@ -19,6 +21,7 @@ impl ResponseError for CustomError {
         match self {
             Self::NotFound(_) => StatusCode::NOT_FOUND,
             Self::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::DeviceTypeError(_) => StatusCode::NOT_IMPLEMENTED,
         }
     }
 
