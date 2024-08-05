@@ -1,4 +1,4 @@
-use futures::{FutureExt, StreamExt};
+use futures::StreamExt;
 use mongodb::{Client, Collection};
 use mongodb::bson::{doc, ser};
 use mongodb::bson::oid::ObjectId;
@@ -19,7 +19,6 @@ pub struct RoomData {
     name: String,
     devices: Vec<Device>,
 }
-
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct SmartSocketData {
@@ -51,31 +50,17 @@ pub struct NewDevice {
     device_type: String,
 }
 
-//
-// #[derive(Clone, Serialize, Deserialize, Debug)]
-// pub struct DeviceData {
-//     #[serde(rename = "_device_name")]
-//     device: Device
-// }
-
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Device {
     Socket(SmartSocketData),
     Thermometer(SmartThermometerData),
 }
 
-
 #[derive(Clone)]
 pub struct MongoHouse(Client);
 
 impl MongoHouse {
     pub async fn new(connection_str: &str) -> Self {
-        // let opts = IndexOptions::builder().unique(true).build();
-        // let index = IndexModel::builder()
-        //     .keys(doc! { "_device_name": -1 })
-        //     .options(opts)
-        //     .build();
         let cl = Client::with_uri_str(connection_str).await.unwrap();
         // cl.database("rooms_db").collection::<RoomData>("rooms").create_index(index, None).await.unwrap();
         cl.database("rooms_db").collection::<RoomData>("rooms");
@@ -101,6 +86,13 @@ impl MongoHouse {
         let query = doc! { "_id": &id };
         let room = collection.find_one(query, None).await?;
         room.ok_or_else(|| CustomError::NotFound(format!("room with id: {}", id)))
+    }
+
+    pub async fn delete_room(&self, id: ObjectId) -> CustomResult<()> {
+        let collection: Collection<RoomData> = self.0.database("rooms_db").collection("rooms");
+        let query = doc! { "_id": &id };
+        collection.find_one_and_delete(query, None).await?;
+        return Ok(());
     }
 
     pub async fn read_rooms(&self) -> CustomResult<Vec<RoomData>> {
@@ -129,8 +121,6 @@ impl MongoHouse {
         }).is_some() {
             return Err(CustomError::InternalError(format!("device with name: {} already exist", data.name.as_str())));
         }
-
-
         let query = doc! { "_id": &id };
         let update = doc! { "$push": {"devices": ser::to_bson(&device)? } };
         collection.update_one(query, update, None).await?;
@@ -148,6 +138,16 @@ impl MongoHouse {
             Device::Thermometer(d) => { d.name == name }
         });
         device.ok_or_else(|| CustomError::NotFound(format!("device with name: {}", name)))
+    }
+
+    pub async fn delete_device(&self, id: ObjectId, name: &str) -> CustomResult<Device> {
+        let device = self.read_device(id, name).await?;
+        let collection: Collection<RoomData> = self.0.database("rooms_db").collection("rooms");
+        let query = doc! { "_id": &id };
+        //TODO: Не удаляет
+        let update = doc! { "$pull": {"devices": {"name": name} } };
+        collection.update_one(query, update, None).await?;
+        Ok(device)
     }
 }
 
