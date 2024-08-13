@@ -2,12 +2,16 @@ use std::env;
 use std::error::Error;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer, web};
 use actix_web::dev::Service;
+use actix_web::rt::time;
 use actix_web::web::{Data, Path};
+use futures::task::SpawnExt;
 use log::LevelFilter;
 use mongodb::bson::oid::ObjectId;
+use tokio::time::sleep;
 
 use mongo::MongoHouse;
 
@@ -31,6 +35,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let boards_data = Arc::new(mongo);
     let counters = CountersTransform::default();
 
+
+    tokio::spawn(async {
+        loop {
+            println!("Hello, world!");
+            sleep(Duration::from_secs(1)).await;
+        }
+    });
 
     HttpServer::new(move || {
         App::new()

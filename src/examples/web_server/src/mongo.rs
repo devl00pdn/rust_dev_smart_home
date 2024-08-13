@@ -143,10 +143,18 @@ impl MongoHouse {
     pub async fn delete_device(&self, id: ObjectId, name: &str) -> CustomResult<Device> {
         let device = self.read_device(id, name).await?;
         let collection: Collection<RoomData> = self.0.database("rooms_db").collection("rooms");
-        let query = doc! { "_id": &id };
-        //TODO: Не удаляет
-        let update = doc! { "$pull": {"devices": {"name": name} } };
-        collection.update_one(query, update, None).await?;
+        let filter = doc! {
+            "_id": id,
+            "devices": {
+                "$elemMatch": { "Thermometer.name": name }
+            }
+        };
+        let update = doc! {
+            "$pull": {
+                "devices": { "Thermometer.name": name }
+            }
+        };
+        collection.update_one(filter, update, None).await?;
         Ok(device)
     }
 }
