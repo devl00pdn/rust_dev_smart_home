@@ -92,7 +92,7 @@ impl MongoHouse {
         let collection: Collection<RoomData> = self.0.database("rooms_db").collection("rooms");
         let query = doc! { "_id": &id };
         collection.find_one_and_delete(query, None).await?;
-        return Ok(());
+        Ok(())
     }
 
     pub async fn read_rooms(&self) -> CustomResult<Vec<RoomData>> {
@@ -115,10 +115,10 @@ impl MongoHouse {
             _ => { None }
         }.ok_or(CustomError::DeviceTypeError(data.device_type.clone()))?;
 
-        if self.read_devices(id).await?.iter().find(|t| match t {
+        if self.read_devices(id).await?.iter().any(|t| match t {
             Device::Socket(d) => { d.name == data.name }
             Device::Thermometer(d) => { d.name == data.name }
-        }).is_some() {
+        }) {
             return Err(CustomError::InternalError(format!("device with name: {} already exist", data.name.as_str())));
         }
         let query = doc! { "_id": &id };
