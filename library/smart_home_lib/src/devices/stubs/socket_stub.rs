@@ -4,7 +4,7 @@ use std::rc::Rc;
 use smart_home_derive::Described;
 
 use crate::common::traits::Described;
-use crate::common::traits::device::{Err, OptReplay, PowerConsumptionMeter, Replay, SmartDevice, Switchable};
+use crate::common::traits::device::{ErrorSm, OptReplay, PowerConsumptionMeter, Replay, SmartDevice, Switchable};
 use crate::common::types::SmartPointer;
 use crate::devices::socket::SocketTrait;
 
@@ -37,7 +37,7 @@ impl SocketStub {
 impl PowerConsumptionMeter for SocketStub {
     fn power_consumption_wt(&mut self) -> OptReplay<f32> {
         if !self.connection_state_emulation {
-            return Err(Err { msg: "Device not respond".to_string() });
+            return Err(ErrorSm { msg: "Device not respond".to_string() });
         }
         Ok(Some(self.power_consumption_wt))
     }
@@ -47,7 +47,7 @@ impl Switchable for SocketStub {
     fn turn_on(&mut self) -> Replay<bool> {
         self.state = true;
         if !self.connection_state_emulation {
-            return Err(Err { msg: "Device not respond".to_string() });
+            return Err(ErrorSm { msg: "Device not respond".to_string() });
         }
         self.power_consumption_wt = 2000.;
         Ok(true)
@@ -56,7 +56,7 @@ impl Switchable for SocketStub {
     fn turn_off(&mut self) -> Replay<bool> {
         self.state = false;
         if !self.connection_state_emulation {
-            return Err(Err { msg: "Device not respond".to_string() });
+            return Err(ErrorSm { msg: "Device not respond".to_string() });
         }
         self.power_consumption_wt = 0.;
         Ok(true)
@@ -64,7 +64,7 @@ impl Switchable for SocketStub {
 
     fn current_state(&mut self) -> Replay<bool> {
         if !self.connection_state_emulation {
-            return Err(Err { msg: "Device not respond".to_string() });
+            return Err(ErrorSm { msg: "Device not respond".to_string() });
         }
         Ok(self.state)
     }

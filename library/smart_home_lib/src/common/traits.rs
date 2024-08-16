@@ -23,15 +23,15 @@ pub mod device {
         fn temperature_deg_celsius(&self) -> OptReplay<f32>;
     }
 
-    pub type Replay<T> = Result<T, Err>;
-    pub type OptReplay<T> = Result<Option<T>, Err>;
+    pub type Replay<T> = Result<T, ErrorSm>;
+    pub type OptReplay<T> = Result<Option<T>, ErrorSm>;
 
     #[derive(Debug)]
-    pub struct Err {
+    pub struct ErrorSm {
         pub msg: String,
     }
 
-    impl Display for Err {
+    impl Display for ErrorSm {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
             write!(
                 f,
@@ -41,5 +41,10 @@ pub mod device {
         }
     }
 
-    impl std::error::Error for Err {}
+    impl std::error::Error for ErrorSm {}
+    impl From<std::io::Error> for ErrorSm {
+        fn from(value: std::io::Error) -> Self {
+            ErrorSm { msg: value.to_string() }
+        }
+    }
 }

@@ -1,4 +1,3 @@
-use std::io::Error;
 use std::net::{ToSocketAddrs, UdpSocket};
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
@@ -7,7 +6,7 @@ use std::thread;
 use std::time::Duration;
 
 use crate::common::traits::Described;
-use crate::common::traits::device::Err;
+use crate::common::traits::device::ErrorSm;
 use crate::common::traits::device::OptReplay;
 use crate::devices::thermometer::TemperatureSensorTrait;
 
@@ -18,7 +17,7 @@ pub struct ThermometerUdp {
 }
 
 impl ThermometerUdp {
-    pub fn new<T>(addr: T) -> Result<Self, Error>
+    pub fn new<T>(addr: T) -> Result<Self, ErrorSm>
     where
         T: ToSocketAddrs,
     {
@@ -31,7 +30,7 @@ impl ThermometerUdp {
         let thread_stop_cloned = thread_stop.clone();
         let thermometer = Arc::new(Mutex::new(Thermometer::new()));
         let thermometer_cloned = thermometer.clone();
-        let _ = thread::spawn(move || -> Result<(), Error> {
+        let _ = thread::spawn(move || -> Result<(), ErrorSm> {
             loop {
                 if thread_stop_cloned.load(Ordering::SeqCst) {
                     return Ok(());
@@ -92,7 +91,7 @@ impl crate::common::traits::device::Thermometer for ThermometerUdp {
             }
             return Ok(Some(thermometer.temp_c));
         }
-        Err(Err { msg: "mutex lock failed".to_string() })
+        Err(ErrorSm { msg: "mutex lock failed".to_string() })
     }
 }
 

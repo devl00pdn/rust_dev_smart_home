@@ -4,5 +4,5 @@ members = ["library/protocol",
     "library/smart_home_derive",
     "library/smart_home_lib",
     "src/examples/smart_home_server",
-    "src/examples/smart_socet", "src/examples/smart_thermometer", "src/examples/web_server"
+    "src/examples/smart_socet", "src/examples/smart_thermometer", "src/examples/socket_gui", "src/examples/web_server"
 ]

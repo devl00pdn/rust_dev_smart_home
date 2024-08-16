@@ -1,23 +1,15 @@
 [package]
-name = "smart_home_server"
+name = "socket_gui"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "server_example"
-path = "src/examples/main.rs"
-
-[[bin]]
-name = "server_tcp"
-path = "src/server_tcp/main.rs"
-
-[[bin]]
-name = "server_tcp_async"
-path = "src/server_tcp_async/main.rs"
-
-
+name = "socket_gui"
+path = "src/main.rs"
 
 [dependencies]
+iced = "0.12.0"
 smart_home_lib = { path = "../../../library/smart_home_lib" }
 protocol = { path = "../../../library/protocol" }
 tokio = { version = "1.38.0", features = ["rt", "rt-multi-thread", "macros"] }
+time = "0.3.36"
