@@ -12,3 +12,4 @@ iced = "0.12.0"
 smart_home_lib = { path = "../../../library/smart_home_lib" }
 protocol = { path = "../../../library/protocol" }
 tokio = { version = "1.38.0", features = ["rt", "rt-multi-thread", "macros"] }
+time = "0.3.36"

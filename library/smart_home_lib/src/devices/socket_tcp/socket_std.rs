@@ -5,7 +5,7 @@ use protocol::errors::ConnectResult;
 
 use crate::common::traits::Described;
 use crate::common::traits::device::{OptReplay, PowerConsumptionMeter, Replay, Switchable};
-use crate::common::traits::device::Err;
+use crate::common::traits::device::ErrorSm;
 use crate::devices::socket::SocketTrait;
 
 pub struct SocketTcp {
@@ -19,13 +19,13 @@ impl SocketTcp {
 
     fn handle_result(result: RequestResult) -> Replay<bool> {
         match result {
-            Ok(resp) => {
-                println!("{}", resp);
+            Ok(_) => {
+                // println!("{}", resp);
                 Ok(true)
             }
             Err(err) => {
-                println!("{}", err);
-                Err(Err { msg: err.to_string() })
+                // println!("{}", err);
+                Err(ErrorSm { msg: err.to_string() })
             }
         }
     }
@@ -38,7 +38,7 @@ impl PowerConsumptionMeter for SocketTcp {
             Ok(val) => { Ok(Some(val.parse::<f32>().unwrap())) }
             Err(err) => {
                 println!("{}", err);
-                Err(Err { msg: err.to_string() })
+                Err(ErrorSm { msg: err.to_string() })
             }
         }
     }
@@ -56,8 +56,12 @@ impl Switchable for SocketTcp {
     }
 
     fn current_state(&mut self) -> Replay<bool> {
-        let result = self.client.send_request("get_state");
-        Self::handle_result(result)
+        match self.client.send_request("get_state") {
+            Ok(repl) => {
+                Ok(repl.eq("state: on"))
+            }
+            Err(e) => { Err(ErrorSm { msg: e.to_string() }) }
+        }
     }
 }
 

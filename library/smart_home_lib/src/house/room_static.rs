@@ -41,7 +41,7 @@ impl<T> DerefMut for SpWrapper<T> {
 
 impl<T> From<SpWrapper<SocketStub>> for Device<T>
 where
-    T: DeviceTypes<Socket = SocketStub>,
+    T: DeviceTypes<Socket=SocketStub>,
 {
     fn from(value: SpWrapper<SocketStub>) -> Self {
         Device::Socket(value)
@@ -50,7 +50,7 @@ where
 
 impl<T> From<SpWrapper<ThermometerStub>> for Device<T>
 where
-    T: DeviceTypes<Thermometer = ThermometerStub>,
+    T: DeviceTypes<Thermometer=ThermometerStub>,
 {
     fn from(value: SpWrapper<ThermometerStub>) -> Self {
         Device::Thermometer(value)
@@ -104,7 +104,7 @@ impl<T: DeviceTypes> Room<T> {
     pub fn remove_device(
         &mut self,
         name: String,
-    ) -> Result<(), crate::common::traits::device::Err> {
+    ) -> Result<(), crate::common::traits::device::ErrorSm> {
         let element_position = self.devices.iter_mut().position(|dev| match dev {
             Device::Socket(d) => d.borrow_mut().description() == name,
             Device::Thermometer(d) => d.borrow_mut().description() == name,
@@ -116,7 +116,7 @@ impl<T: DeviceTypes> Room<T> {
             }
             return Ok(());
         }
-        Err(crate::common::traits::device::Err {
+        Err(crate::common::traits::device::ErrorSm {
             msg: "Device to remove not found".to_string(),
         })
     }

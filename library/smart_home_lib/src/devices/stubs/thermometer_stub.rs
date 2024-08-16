@@ -18,7 +18,7 @@ pub struct ThermometerStub {
 impl Thermometer for ThermometerStub {
     fn temperature_deg_celsius(&self) -> OptReplay<f32> {
         if !self.connection_state_emulation {
-            return Err(crate::common::traits::device::Err { msg: "Device not respond".to_string() });
+            return Err(crate::common::traits::device::ErrorSm { msg: "Device not respond".to_string() });
         }
         Ok(Some(self.current_temp_deg))
     }

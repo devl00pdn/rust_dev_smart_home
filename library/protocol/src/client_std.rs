@@ -86,4 +86,6 @@ pub enum RequestError {
     Send(#[from] SendError),
     #[error(transparent)]
     Recv(#[from] RecvError),
+    #[error("IO error: {0}")]
+    Io(#[from] io::Error),
 }

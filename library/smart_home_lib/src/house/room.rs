@@ -3,7 +3,7 @@ use std::collections::LinkedList;
 use std::rc::Rc;
 
 use crate::common::traits::Described;
-use crate::common::traits::device::{Err, SmartDevice};
+use crate::common::traits::device::{ErrorSm, SmartDevice};
 use crate::common::types::SmartPointer;
 
 pub struct Room {
@@ -26,7 +26,7 @@ impl Room {
         self.devices.push_back(dev);
     }
 
-    pub fn remove_device(&mut self, name: String) -> Result<(), Err> {
+    pub fn remove_device(&mut self, name: String) -> Result<(), ErrorSm> {
         let element_position = self.devices.iter().position(|dev| dev.borrow_mut().description() == name);
         if let Some(remove_pos) = element_position {
             let swapped_elem = self.devices.pop_back().unwrap();
@@ -35,7 +35,7 @@ impl Room {
             }
             return Ok(());
         }
-        Err(Err { msg: "Device to remove not found".to_string() })
+        Err(ErrorSm { msg: "Device to remove not found".to_string() })
     }
 
     pub fn make_report(&self) -> String {
