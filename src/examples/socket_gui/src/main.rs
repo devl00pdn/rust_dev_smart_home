@@ -1,19 +1,15 @@
-use std::cell::RefCell;
-use std::net::SocketAddr;
-use std::time;
-
 use iced::{Sandbox, Settings, Size};
 use iced::alignment::Alignment;
 use iced::Element;
 use iced::widget::{Button, Column, Row, Text};
 use iced::window;
 
-use smart_home_lib::common::traits::device::{PowerConsumptionMeter, Switchable};
-use smart_home_lib::devices::socket_tcp::socket_thread::SocketTcpWrapper;
+use crate::socket_lib_wrapper::SocketLibWrapper;
 
+mod socket_lib_wrapper;
 #[derive(Default)]
 struct SocketWidget {
-    socket: Option<RefCell<SocketTcpWrapper>>,
+    socket: Option<SocketLibWrapper>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -44,15 +40,13 @@ impl Sandbox for SocketWidget {
         }
     }
 
-
     fn view(&self) -> Element<Message> {
         let mut pwr_toggle_btn = None;
         let mut state_field = None;
         let mut pwr_field = None;
 
         if let Some(socket) = &self.socket {
-            let mut pwr_txt = "Power: Unknown".to_string();
-            let is_socket_enable = socket.borrow_mut().current_state().unwrap();
+            let is_socket_enable = socket.current_state();
 
             let pwr_label = if is_socket_enable {
                 "Turn Off"
@@ -66,9 +60,9 @@ impl Sandbox for SocketWidget {
                 "Socket: off".to_string()
             };
 
-            if let Ok(Some(pwr)) = socket.borrow_mut().power_consumption_wt() {
-                pwr_txt = format!("Power: {} wt", pwr);
-            }
+            let pwr = socket.power_consumption_wt();
+            let pwr_txt = format!("Power: {} wt", pwr);
+
             state_field = Some(Text::new(state_txt));
             pwr_field = Some(Text::new(pwr_txt));
             pwr_toggle_btn = Some(Button::new(pwr_label));
@@ -94,32 +88,28 @@ impl Sandbox for SocketWidget {
     }
 }
 
+
 impl SocketWidget {
     fn toggle_socket_state(&mut self) {
-        if let Some(s) = &mut self.socket {
-            if s.borrow_mut().current_state().unwrap() {
-                s.borrow_mut().turn_off().unwrap();
+        if let Some(s) = &self.socket {
+            if s.current_state() {
+                s.turn_off();
             } else {
-                s.borrow_mut().turn_on().unwrap();
+                s.turn_on();
             }
         }
     }
 
     fn handle_connection_pressed(&mut self) {
         if self.socket.is_none() {
-            let addr: SocketAddr = "127.0.0.1:55331".parse().unwrap();
-            let ten_millis = time::Duration::from_millis(200);
-            self.socket = match SocketTcpWrapper::new(addr, ten_millis) {
-                Ok(s) => {
-                    Some(RefCell::new(s))
-                }
-                Err(_) => { None }
-            }
+            let socket = SocketLibWrapper::new("127.0.0.1:55331".to_string()).expect("Oh no!");
+            self.socket = Some(socket);
         } else {
             self.socket = None
         }
     }
 }
+
 fn main() {
     let settings = Settings {
         window: window::Settings {

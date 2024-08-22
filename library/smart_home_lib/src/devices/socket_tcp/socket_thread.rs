@@ -1,5 +1,6 @@
+use std::ffi::{c_char, c_void, CStr};
 use std::io::{Error, ErrorKind};
-use std::net::ToSocketAddrs;
+use std::net::{SocketAddr, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
@@ -15,7 +16,6 @@ pub struct SocketTcpWrapper {
     thread_stop: Arc<AtomicBool>,
     socket: Arc<Mutex<(SocketTcp, SocketData)>>,
 }
-
 
 impl SocketTcpWrapper {
     pub fn new<T>(addr: T, update_period: Duration) -> Result<Self, Error>
@@ -45,10 +45,12 @@ impl SocketTcpWrapper {
 }
 
 impl Drop for SocketTcpWrapper {
-    fn drop(&mut self) {
+    fn drop(&mut self)
+    {
         self.thread_stop.store(true, Ordering::SeqCst)
     }
 }
+
 #[derive(Default)]
 struct SocketData {
     last_received_state: bool,
@@ -90,3 +92,46 @@ impl Switchable for SocketTcpWrapper {
 impl Described for SocketTcpWrapper {}
 
 impl SocketTrait for SocketTcpWrapper {}
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn create_socket(addr: *const c_char) -> *mut c_void {
+    let addr_vec = unsafe { CStr::from_ptr(addr).to_bytes().to_vec() };
+    let addr_string = String::from_utf8(addr_vec).unwrap();
+    let socket_addr: SocketAddr = addr_string.parse().unwrap();
+    let dt = Duration::from_millis(200);
+    let socket = SocketTcpWrapper::new(socket_addr, dt).unwrap();
+    let socket = Box::new(socket);
+    Box::into_raw(socket).cast()
+}
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn destroy_socket(socket: *mut c_void) {
+    let _ = Box::from_raw(socket as *mut SocketTcpWrapper);
+}
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn turn_on(socket: *mut c_void) -> bool {
+    let s = &mut *socket.cast::<SocketTcpWrapper>();
+    s.turn_on().unwrap()
+}
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn turn_off(socket: *mut c_void) -> bool {
+    let s = &mut *socket.cast::<SocketTcpWrapper>();
+    s.turn_off().unwrap()
+}
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn power_consumption_wt(socket: *mut c_void) -> f32 {
+    let s = &mut *socket.cast::<SocketTcpWrapper>();
+    match s.power_consumption_wt().unwrap() {
+        Some(v) => { v }
+        None => { 0.0 }
+    }
+}
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn current_state(socket: *mut c_void) -> bool {
+    let s = &mut *socket.cast::<SocketTcpWrapper>();
+    s.current_state().unwrap()
+}

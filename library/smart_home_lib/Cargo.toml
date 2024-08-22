@@ -5,8 +5,14 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+crate-type = ["cdylib", "lib"]
+bench = false
+
+
 [dependencies]
 smart_home_derive = { path = "../smart_home_derive" }
 protocol = { path = "../protocol" }
 tokio = { version = "1.38.0", features = ["full"] }
 async-trait = "0.1.81"
+libc = "0.2.155"
